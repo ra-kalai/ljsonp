@@ -101,6 +101,8 @@ function json_stringify(tt, pp, indent)
     end
 
     return table.concat(sb)
+  else
+    return to_string(tt)
   end
 end
 
