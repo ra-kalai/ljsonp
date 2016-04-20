@@ -17,6 +17,8 @@
 local g_nullt = {"*null*kind*"}
 local g_object_mt = {__len = function () return -2 end}
 
+local format = string.format
+
 function json_encode_object(tt, indent, pp)
 	local sb = {}
 	local e = 0
@@ -32,9 +34,11 @@ function json_encode_object(tt, indent, pp)
 		end
 
 		if type(value) == "table" then
-			sb[#sb+1] = string.format("%s:%s", to_string(k, true), json_stringify(value, pp, indent + 2))
+			sb[#sb+1] = format("%s:%s",
+				to_string(k, true), json_stringify(value, pp, indent + 2))
 		else
-			sb[#sb+1] = string.format("%s:%s", to_string(k, true), to_string(value))
+			sb[#sb+1] = format("%s:%s",
+				to_string(k, true), to_string(value))
 		end
 		sb[#sb+1] = ","
 	end
@@ -118,7 +122,7 @@ function to_string(v, cast_to_string)
 		return tostring(v)
 
 	elseif  type(v)=="string" then
-		return string.format("%q", v)
+		return format("%q", v)
 
 	elseif  type(v) == "boolean" then
 		if v == true then
@@ -155,12 +159,13 @@ local integer = P'-' ^ -1 * digit ^ 1
 local frac = P'.' *  digit ^ 1
 local exp = S'eE' * S'+-' ^ -1 * digit ^ 1
 
-local anumber =  white * (C(integer * frac * exp) +
-													C(integer * exp) +
-													C(integer * frac) +
-													integer) / function (n,b)
-														return tonumber(n)
-													end
+local anumber =
+		white * (C(integer * frac * exp) +
+		C(integer * exp) +
+		C(integer * frac) +
+		integer) / function (n,b)
+			return tonumber(n)
+		end
 
 local leftBracket = white * '[' * white
 local rightBracket = white * ']' * white
@@ -212,11 +217,13 @@ local escape_map = {
 	["\\"] = '\\',
 }
 
-local escape = (P"\\" * C(S'tbfnrt/"\\')) / function (e) return escape_map[e] end
-local utfescape = P"\\" * P'u' *
-									C((lpeg.R("09") + lpeg.R("af") + lpeg.R("AF"))^-4) / function (c)
-	return (utfcp(tonumber('0x'..c)))
-end
+local escape =
+		(P"\\" * C(S'tbfnrt/"\\')) / function (e) return escape_map[e] end
+local utfescape =
+		P"\\" * P'u' *
+		C((lpeg.R("09") + lpeg.R("af") + lpeg.R("AF"))^-4) / function (c)
+			return (utfcp(tonumber('0x'..c)))
+		end
 
 local innerString = ((P(1) - S"\\\"") + escape + utfescape)^1
 
