@@ -18,92 +18,93 @@ local g_nullt = {"*null*kind*"}
 local g_object_mt = {__len = function () return -2 end}
 
 function json_encode_object(tt, indent, pp)
-  local sb = {}
-  local e = 0
-  local k
-  local value
-	
-  sb[#sb+1] = "{";
-  for k, value in pairs(tt) do
-    e = e + 1
+	local sb = {}
+	local e = 0
+	local k
+	local value
+
+	sb[#sb+1] = "{";
+	for k, value in pairs(tt) do
+		e = e + 1
 		if pp ~= 0 then
-    	sb[#sb+1] = "\n"
-    	sb[#sb+1] = string.rep(" ", indent*pp)
+			sb[#sb+1] = "\n"
+			sb[#sb+1] = string.rep(" ", indent*pp)
 		end
 
-    if type(value) == "table" then
-      sb[#sb+1] = string.format("%s:%s", to_string(k, true), json_stringify(value, pp, indent + 2))
-    else
-      sb[#sb+1] = string.format("%s:%s", to_string(k, true), to_string(value))
-    end
-    sb[#sb+1] = ","
-  end
-  if sb[#sb] == ',' then 
-  	sb[#sb] = nil
-  end
-	if pp ~= 0 then
-  	sb[#sb+1] = "\n"
-  	sb[#sb+1] = string.rep(" ", (indent-2)*pp)
+		if type(value) == "table" then
+			sb[#sb+1] = string.format("%s:%s", to_string(k, true), json_stringify(value, pp, indent + 2))
+		else
+			sb[#sb+1] = string.format("%s:%s", to_string(k, true), to_string(value))
+		end
+		sb[#sb+1] = ","
 	end
-  sb[#sb+1] = "}"
+	if sb[#sb] == ',' then
+		sb[#sb] = nil
+	end
+	if pp ~= 0 then
+		sb[#sb+1] = "\n"
+		sb[#sb+1] = string.rep(" ", (indent-2)*pp)
+	end
+	sb[#sb+1] = "}"
 
 	return e, sb
 end
 
 function json_encode_array(tt, indent, pp)
-  local sb = {}
-  local k
-  local value
+	local sb = {}
+	local k
+	local value
 
-  sb[#sb+1] = "[";
+	sb[#sb+1] = "[";
 
-  for k = 1, #tt do
-    value = tt[k]
+	for k = 1, #tt do
+		value = tt[k]
 
-    if type (value) == "table" then
-      sb[#sb+1] = json_stringify(value, pp, indent + 2)
-    else
-		  if pp ~= 0 then
-  	  	sb[#sb+1] = "\n"
-  	  	sb[#sb+1] = string.rep(" ", (indent)*pp)
-		  end
-      sb[#sb+1] = to_string(value)
-    end
-    sb[#sb+1] = ","
-  end
-  if sb[#sb] == ',' then 
-      sb[#sb] = nil
-  end
-	if pp ~= 0 then
-  	sb[#sb+1] = "\n"
-  	sb[#sb+1] = string.rep(" ", (indent-2)*pp)
+		if type (value) == "table" then
+			sb[#sb+1] = json_stringify(value, pp, indent + 2)
+		else
+			if pp ~= 0 then
+				sb[#sb+1] = "\n"
+				sb[#sb+1] = string.rep(" ", (indent)*pp)
+			end
+			sb[#sb+1] = to_string(value)
+		end
+		sb[#sb+1] = ","
 	end
-  table.insert(sb, "]");
+
+	if sb[#sb] == ',' then
+		sb[#sb] = nil
+	end
+	if pp ~= 0 then
+		sb[#sb+1] = "\n"
+		sb[#sb+1] = string.rep(" ", (indent-2)*pp)
+	end
+	table.insert(sb, "]");
 
 	return sb
 end
 
 function json_stringify(tt, pp, indent)
-  pp = pp or 0
-  indent = indent or 0
+	pp = pp or 0
+	indent = indent or 0
 
-  local sb = {}
+	local sb = {}
 
-  if type(tt) == "table" then
+	if type(tt) == "table" then
 		if #tt == -1 then
 			return "null"
 		end
 
-    local e, sb = json_encode_object(tt, indent, pp)
+		local e, sb = json_encode_object(tt, indent, pp)
 
-    if e == #tt then
-      sb = json_encode_array(tt, indent, pp)
-    end
+		if e == #tt then
+			sb = json_encode_array(tt, indent, pp)
+		end
 
-    return table.concat(sb)
-  else
-    return to_string(tt)
-  end
+		return table.concat(sb)
+	else
+		return to_string(tt)
+	end
 end
 
 function to_string(v, cast_to_string)
@@ -111,11 +112,11 @@ function to_string(v, cast_to_string)
 		return "null"
 
 	elseif type(v) == "number" then
-    if cast_to_string then
-      return '"' .. to_string(v) .. '"'
-    end
-
+		if cast_to_string then
+			return '"' .. to_string(v) .. '"'
+		end
 		return tostring(v)
+
 	elseif  type(v)=="string" then
 		return string.format("%q", v)
 
@@ -180,20 +181,20 @@ if loaded then
 end
 
 utfcp = function (cp)
-  if cp < 128 then
-    return string_char(cp)
-  end
-  local s = ""
-  local prefix_max = 32
-  while true do
-    local suffix = cp % 64
-    s = string_char(128 + suffix)..s
-    cp = (cp - suffix) / 64
-    if cp < prefix_max then
-      return string_char((256 - (2 * prefix_max)) + cp)..s
-    end
-    prefix_max = prefix_max / 2
-  end
+	if cp < 128 then
+		return string_char(cp)
+	end
+	local s = ""
+	local prefix_max = 32
+	while true do
+		local suffix = cp % 64
+		s = string_char(128 + suffix)..s
+		cp = (cp - suffix) / 64
+		if cp < prefix_max then
+			return string_char((256 - (2 * prefix_max)) + cp)..s
+		end
+		prefix_max = prefix_max / 2
+	end
 end
 
 end)()
@@ -253,17 +254,17 @@ local function a_key_value_list(p)
 end
 
 local function a_json_object(p)
-  return p / function(a)
-    if #a == 0 then
-      return {}
-    end
-    local ret = {}
-    a = a[1]
-    for i=1, #a, 2 do
-      ret[a[i]] = a[i+1]
-    end
+	return p / function(a)
+		if #a == 0 then
+			return {}
+		end
+		local ret = {}
+		a = a[1]
+		for i=1, #a, 2 do
+			ret[a[i]] = a[i+1]
+		end
 
-    return ret
+		return ret
 	end
 end
 
@@ -294,14 +295,18 @@ local jsonp = P {
 	elements = Ct(V('value') * (comma * (V('value')))^0),
 }
 
-return {null = g_nullt,
-        object = function (o)
-          local ret = o or {}
-          setmetatable(ret, g_object_mt)
-          return ret
-        end,
-        stringify = json_stringify,
-        parse = function (text) 
-  local _, ret =  pcall(function () return jsonp:match(text) end)
-  return ret
-end}
+return {
+	null = g_nullt,
+	object = function (o)
+		local ret = o or {}
+		setmetatable(ret, g_object_mt)
+		return ret
+	end,
+	stringify = json_stringify,
+	parse = function (text)
+	local _, ret =  pcall(function () return jsonp:match(text) end)
+		return ret
+	end
+}
+
+-- vim: set ts=2 sw=2 noet:
