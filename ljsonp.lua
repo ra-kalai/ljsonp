@@ -140,7 +140,6 @@ local lpeg = require("lpeg")
 local P = lpeg.P
 local Cs = lpeg.Cs
 local Ct = lpeg.Ct
-local Cg = lpeg.Cg
 local C = lpeg.C
 local S = lpeg.S
 local V = lpeg.V
@@ -231,16 +230,25 @@ local function a_key_value(p)
 end
 
 local function a_key_value_list(p)
-  return p / function(a, b)
-    if (#b ~= 1) then
-      return a
-    end
+	return p / function(a, b)
+		if (#b < 1) then
+			return a
+		end
 
-    b = b[1]
-    b[#b+1] = a[1]
-    b[#b+1] = a[2]
+		local already_exist_map = {}
+		already_exist_map[a[1]] = 1
 
-    return b
+		local t
+		for i=1, #b do
+			t = b[i]
+			if already_exist_map[t[1]] == nil then
+				a[#a+1] = t[1]
+				a[#a+1] = t[2]
+				already_exist_map[t[1]] = #a - 2
+			end
+		end
+
+		return a
 	end
 end
 
@@ -277,11 +285,11 @@ local nullv = P'null' / function (b) return g_nullt end
 
 local jsonp = P {
 	"input",
-	input = (V("value")) * -1,
-	object = a_json_object(leftBrace * Ct(V('members')^0) * rightBrace),
-	members = a_key_value_list(V('pair') * Ct((comma * V('members'))^0)),
+	input = V("value")^1,
+	object = a_json_object(leftBrace * Ct(V('members')^-1) * rightBrace),
+	members = a_key_value_list(V('pair') * Ct((comma * V('pair'))^0)),
 	pair = a_key_value(quotedString * colon * V("value")),
-	value = quotedString + V("object") + V("array") + anumber + abool + nullv, 
+	value = quotedString + V("object") + V("array") + anumber + abool + nullv,
 	array = leftBracket * (V('elements')^-1) * rightBracket,
 	elements = Ct(V('value') * (comma * (V('value')))^0),
 }
