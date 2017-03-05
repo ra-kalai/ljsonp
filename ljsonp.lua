@@ -121,10 +121,19 @@ function to_string(v, cast_to_string)
 		end
 		return tostring(v)
 
-	elseif  type(v)=="string" then
-		return format("%q", v)
+	elseif type(v) == "string" then
+		return table.concat({'"', v:gsub('["%\\\000-\031]',function (c)
+			if c == '\n' then return '\\n' end
+			if c == '\t' then return '\\t' end
+			if c == '\r' then return '\\r' end
+			if c == '\v' then return '\\v' end
+			if c == '\f' then return '\\f' end
+			if c == '\\' then return '\\\\' end
+			if c == '"' then return '\\"' end
+			return string.format("\\u%04x", c:byte())
+		end) , '"'})
 
-	elseif  type(v) == "boolean" then
+	elseif type(v) == "boolean" then
 		if v == true then
 			return "true"
 		end
