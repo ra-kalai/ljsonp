@@ -1,6 +1,6 @@
 local ljsonp = require 'ljsonp'
 
-local json = ljsonp.parse('{"foo":"bar", "barfoo":null, "foobar": {"a": [1, "2" , 3]}}')
+local json = ljsonp.parse('{"foo":"bar", "barfoo":null, "foobar": {"a": [1, "2" , 3, ""]}}')
 
 print(ljsonp.stringify(json, 1))
 --

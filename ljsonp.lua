@@ -122,7 +122,7 @@ function to_string(v, cast_to_string)
 		return tostring(v)
 
 	elseif type(v) == "string" then
-		return table.concat({'"', v:gsub('["%\\\000-\031]',function (c)
+		return table.concat({'"', v:gsub('["%\\\000-\031\127-\255]',function (c)
 			if c == '\n' then return '\\n' end
 			if c == '\t' then return '\\t' end
 			if c == '\r' then return '\\r' end
@@ -145,6 +145,8 @@ function to_string(v, cast_to_string)
 		end
 
 		return json_stringify(v)
+	else
+		return "*" .. type(v) .. "*"
 	end
 end
 
@@ -234,7 +236,7 @@ local utfescape =
 			return (utfcp(tonumber('0x'..c)))
 		end
 
-local innerString = ((P(1) - S"\\\"") + escape + utfescape)^1
+local innerString = ((P(1) - S"\\\"") + escape + utfescape)^0
 
 local quotedString = '"' * Cs(innerString) * '"' / '%1'
 
